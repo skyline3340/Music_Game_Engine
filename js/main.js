@@ -28,6 +28,17 @@ let spectrum = [    //譜
     }
 ]
 
+let lineSpectrum = [
+    track0 = [
+        start = {
+            4000: true,
+        },
+        end = {
+            4000: 4200,
+        }
+    ]
+]
+
 // 初始化
 window.onload = () => {
     checkLine = document.getElementById('controller').offsetHeight - (document.getElementsByClassName('check-point')[0].offsetHeight / 2);
@@ -37,7 +48,7 @@ window.onload = () => {
             totalBalls++;
         }
     }
-    window.setInterval(dropBall, delay);
+    window.setInterval(drop, delay);
     document.addEventListener('keydown', (event) => {
         if (keyMap[event.code] != undefined) {
             showCheckEffect(keyMap[event.code])
@@ -46,9 +57,10 @@ window.onload = () => {
     })
 }
 
-// 音球下落控制
-function dropBall() {
+// 下落控制
+function drop() {
     var balls = document.getElementsByClassName('ball');
+    var lines = document.getElementsByClassName('line');
     for (var key = 0; key < balls.length; key++) {
         var position = getPosition(balls[key]);
         if (position.y + (balls[key].offsetHeight / 2) + speed < vh) {
@@ -60,7 +72,21 @@ function dropBall() {
             showCheckLevel(100);
         }
     }
+    for(var key = 0; key < lines.length; key++){
+        var position = getPosition(lines[key]);
+        if (position.y - (lines[key].offsetHeight / 2) + speed < vh) {
+            lines[key].style.transform = `translateY(${position.y + speed}px)`;
+            console.log(getPosition(lines[key]))
+            continue;
+        }
+        if (position.y + lines[key].offsetHeight + speed >= vh) {
+            lines[key].remove();
+            showCheckLevel(100);
+        }
+    }
     createBall();
+    createLine();
+    timeLine += delay;
 }
 
 // 取得物件位置
@@ -77,10 +103,25 @@ function createBall() {
         if (spectrum[track][timeLine]) {
             var ball = document.createElement('div');
             ball.classList.add('ball');
+            ball.style.transform = `translateY(${range / -2}px)`;
             document.getElementById(`track${track}`).append(ball);
         }
     }
-    timeLine += delay;
+}
+
+// 依時間軸生成音條
+function createLine() {
+    for(var track in lineSpectrum){
+        if (lineSpectrum[track][0][timeLine]) {
+            var line = document.createElement('div');
+            var height = ((lineSpectrum[track][1][timeLine] - timeLine) / delay) * speed
+            line.classList.add('line');
+            line.style.height = `${height}px`;
+            line.style.transform = `translateY(${height / -2}px)`;
+            line.innerHTML = '<div class="line-ball"></div><div class="line-ball"></div>'
+            document.getElementById(`track${track}`).append(line);
+        }
+    }
 }
 
 // 確認音球位置是否在判定區

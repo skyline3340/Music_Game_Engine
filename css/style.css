@@ -24,14 +24,14 @@ body {
     overflow: hidden;
 }
 
-.ball-area {
+.track-area {
     width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.ball-born {
+.track-born {
     width: calc(var(--ballw) * 2.5);
     display: flex;
     justify-content: center;
@@ -226,4 +226,37 @@ body {
     100% {
         opacity: 0;
     }
+}
+
+.line {
+    position: absolute;
+    width: var(--ballw);
+    border-radius: calc(var(--ballw) / 2);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(255, 182, 245, 0.8);    
+    transition-duration: .033s;
+    transition-timing-function: linear;
+}
+
+.line-ball {
+    position: relative;
+    background-color: rgb(255, 133, 239);
+    width: var(--ballw);
+    height: var(--ballw);
+    border-radius: calc(var(--ballw) / 2);
+    z-index: 5;
+}
+
+.line-ball::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--ballw) * 0.1);
+    left: calc(var(--ballw) * 0.1);
+    width: calc(var(--ballw) * 0.6);
+    height: calc(var(--ballw) * 0.6);
+    border: calc(var(--ballw) * 0.1) #fff solid;
+    border-radius: calc(var(--ballw) * 0.4);
 }
