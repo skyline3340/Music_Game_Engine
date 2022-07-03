@@ -1,7 +1,7 @@
 let vh = window.innerHeight;
 let vw = window.innerWidth;
 let delay = 10; //更新時間(mS)
-let speed = 15; //下落速度(px)
+let speed = 10; //下落速度(px)
 let timeLine = 0;   //時間軸(mS)
 let checkLine, range;
 let score = 0;  //分數
@@ -11,56 +11,49 @@ let keyMap = {  //物理鍵位
     'ArrowRight': 2,
 }
 let totalBalls = 0; //音球總數
-let spectrum = [    //譜
-    track0 = {
-        500: true,
-        2000: true,
-        3500: true,
-    },
-    track1 = {
-        1000: true,
-        2500: true,
-    },
-    track2 = {
-        1500: true,
-        3000: true,
-        3500: true,
-    }
-]
-
-let lineSpectrum = [
-    track0 = [
-        start = {
-            4000: true,
-        },
-        end = {
-            4000: 4200,
-        }
-    ]
-]
+let ballSpectrum, lineSpectrum;   //譜
 
 // 初始化
 window.onload = () => {
+    // 讀取譜面
+    fetch("../json/spectrum.json")
+        .then(response => {
+            return response.json();
+        })
+        .then((ret) => {
+            ballSpectrum = ret.ballSpectrum;
+            lineSpectrum = ret.lineSpectrum;
+            for (var i in ballSpectrum) {
+                totalBalls += Object.keys(ballSpectrum[i]).length;
+            }
+        });
+
     checkLine = document.getElementById('controller').offsetHeight - (document.getElementsByClassName('check-point')[0].offsetHeight / 2);
     range = document.getElementsByClassName('check-point')[0].offsetHeight;
-    for(var i in spectrum){
-        for(var j in spectrum[i]){
-            totalBalls++;
-        }
-    }
+    
     window.setInterval(drop, delay);
+
     document.addEventListener('keydown', (event) => {
         if (keyMap[event.code] != undefined) {
             showCheckEffect(keyMap[event.code])
-            checkPosition(keyMap[event.code]);
+            checkBallPosition(keyMap[event.code]);
         }
     })
+
+
 }
 
 // 下落控制
 function drop() {
+    dropBall();
+    dropLine();
+    createBall();
+    createLine();
+    timeLine += delay;
+}
+
+function dropBall(){
     var balls = document.getElementsByClassName('ball');
-    var lines = document.getElementsByClassName('line');
     for (var key = 0; key < balls.length; key++) {
         var position = getPosition(balls[key]);
         if (position.y + (balls[key].offsetHeight / 2) + speed < vh) {
@@ -72,11 +65,15 @@ function drop() {
             showCheckLevel(100);
         }
     }
-    for(var key = 0; key < lines.length; key++){
+}
+
+function dropLine(){
+    var lines = document.getElementsByClassName('line');    
+    for (var key = 0; key < lines.length; key++) {
         var position = getPosition(lines[key]);
         if (position.y - (lines[key].offsetHeight / 2) + speed < vh) {
             lines[key].style.transform = `translateY(${position.y + speed}px)`;
-            console.log(getPosition(lines[key]))
+            // console.log(getPosition(lines[key]))
             continue;
         }
         if (position.y + lines[key].offsetHeight + speed >= vh) {
@@ -84,9 +81,6 @@ function drop() {
             showCheckLevel(100);
         }
     }
-    createBall();
-    createLine();
-    timeLine += delay;
 }
 
 // 取得物件位置
@@ -99,8 +93,8 @@ function getPosition(element) {
 
 // 依時間軸生成音球
 function createBall() {
-    for(var track in spectrum){
-        if (spectrum[track][timeLine]) {
+    for (var track in ballSpectrum) {
+        if (ballSpectrum[track][timeLine]) {
             var ball = document.createElement('div');
             ball.classList.add('ball');
             ball.style.transform = `translateY(${range / -2}px)`;
@@ -111,21 +105,21 @@ function createBall() {
 
 // 依時間軸生成音條
 function createLine() {
-    for(var track in lineSpectrum){
+    for (var track in lineSpectrum) {
         if (lineSpectrum[track][0][timeLine]) {
             var line = document.createElement('div');
-            var height = ((lineSpectrum[track][1][timeLine] - timeLine) / delay) * speed
+            var height = ((lineSpectrum[track][1][timeLine] - timeLine) / delay) * speed;
             line.classList.add('line');
             line.style.height = `${height}px`;
             line.style.transform = `translateY(${height / -2}px)`;
-            line.innerHTML = '<div class="line-ball"></div><div class="line-ball"></div>'
+            line.innerHTML = '<div class="line-ball-start"></div><div class="line-ball-end"></div>'
             document.getElementById(`track${track}`).append(line);
         }
     }
 }
 
 // 確認音球位置是否在判定區
-function checkPosition(track) {
+function checkBallPosition(track) {
     var balls = document.getElementById(`track${track}`).children;
     if (balls.length > 0) {
         var position = getPosition(balls[0]);
@@ -160,7 +154,7 @@ function showCheckLevel(check) {
         show.innerText = "GREAT";
         show.style = 'background: var(--great); -webkit-background-clip: text;';
         score += 0.6;
-    }else if(check <= range){
+    } else if (check <= range) {
         show.innerText = "NICE";
         show.style = 'background: var(--nice); -webkit-background-clip: text;';
         score += 0.2;

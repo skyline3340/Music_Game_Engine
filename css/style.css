@@ -239,18 +239,38 @@ body {
     background-color: rgba(255, 182, 245, 0.8);    
     transition-duration: .033s;
     transition-timing-function: linear;
+    z-index: 5;
 }
 
-.line-ball {
-    position: relative;
+.line-ball-start {
+    position: absolute;
     background-color: rgb(255, 133, 239);
     width: var(--ballw);
     height: var(--ballw);
     border-radius: calc(var(--ballw) / 2);
-    z-index: 5;
 }
 
-.line-ball::before {
+.line-ball-end{
+    position: absolute;
+    top: calc(100% - var(--ballw));
+    background-color: rgb(255, 133, 239);
+    width: var(--ballw);
+    height: var(--ballw);
+    border-radius: calc(var(--ballw) / 2);
+}
+
+.line-ball-start::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--ballw) * 0.1);
+    left: calc(var(--ballw) * 0.1);
+    width: calc(var(--ballw) * 0.6);
+    height: calc(var(--ballw) * 0.6);
+    border: calc(var(--ballw) * 0.1) #fff solid;
+    border-radius: calc(var(--ballw) * 0.4);
+}
+
+.line-ball-end::before {
     content: '';
     position: absolute;
     top: calc(var(--ballw) * 0.1);
